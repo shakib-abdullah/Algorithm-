@@ -1,64 +1,69 @@
 #include <stdio.h>
 
-int main() {
-    int n, W;
-    float value[20], weight[20], ratio[20], temp;
-    float totalValue = 0;
+float knapsack(int n, int weights[], int profits[], int capacity) {
+    float ratios[n];
+    float tempRatio; // Temporary variable for swapping ratios
+    int tempInt; // Temporary variable for swapping weights and profits
 
-    // METHOD 1: STATIC DECLARATION
-    n = 3;
-    W = 50;
-    float v[] = {60, 100, 120};
-    float w[] = {10, 20, 30};
-    for(int i=0; i<n; i++) {
-        value[i] = v[i];
-        weight[i] = w[i];
-    }
-
-    // METHOD 2: USER INPUT
-    printf("Item koyta? ");
-    scanf("%d", &n);
-    printf("Bag er capacity koto? ");
-    scanf("%d", &W);
+    // Calculate profit-to-weight ratios
     for (int i = 0; i < n; i++) {
-        printf("Item %d er Value ar Weight dao: ", i + 1);
-        scanf("%f %f", &value[i], &weight[i]);
+        ratios[i] = (float)profits[i] / weights[i];
     }
 
 
-    // 1. Proti kg er dam (Ratio) ber kora
-    for (int i = 0; i < n; i++) {
-        ratio[i] = value[i] / weight[i];
-    }
 
-    // 2. Ratio onujayi boro theke choto shajano (Sorting)
+    // Sort by ratio (descending), and keep all arrays aligned
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
-            if (ratio[i] < ratio[j]) {
-                // Ratio swap
-                temp = ratio[j]; ratio[j] = ratio[i]; ratio[i] = temp;
-                // Sathe sathe weight o swap
-                temp = weight[j]; weight[j] = weight[i]; weight[i] = temp;
-                // Sathe sathe value o swap
-                temp = value[j]; value[j] = value[i]; value[i] = temp;
+            if (ratios[i] < ratios[j]) {
+                // Swap ratios
+                tempRatio = ratios[i];
+                ratios[i] = ratios[j];
+                ratios[j] = tempRatio;
+
+                // Swap weights
+                tempInt = weights[i];
+                weights[i] = weights[j];
+                weights[j] = tempInt;
+
+                // Swap profits
+                tempInt = profits[i];
+                profits[i] = profits[j];
+                profits[j] = tempInt;
+
             }
         }
     }
 
-    // 3. Bag e bhora shuru
-    for (int i = 0; i < n; i++) {
-        if (weight[i] <= W) {
-            // Purota neya jabe
-            totalValue += value[i];
-            W -= weight[i];
+    float totalProfit = 0.0;
+    int remaining = capacity;
+
+
+    // Greedy selection
+    for (int i = 0; i < n && remaining > 0; i++) {
+        if (weights[i] <= remaining) {
+            totalProfit += profits[i];
+            remaining -= weights[i];
         } else {
-            // Shudu kichu ongsho neya jabe
-            totalValue += value[i] * ((float)W / weight[i]);
-            break;
+            float fraction = (float)remaining / weights[i];
+            totalProfit += profits[i] * fraction;
+            remaining = 0;
         }
     }
 
-    printf("Maximum labh hobe: %.2f\n", totalValue);
+
+
+    return totalProfit;
+}
+
+int main(void) {
+    int n = 7;
+    int profits[] = {12, 5, 16, 7, 9, 11, 6};
+    int weights[] = {3, 1, 4, 2, 9, 4, 3};
+    int capacity = 15;
+
+    float totalProfit = knapsack(n, weights, profits, capacity);
+     printf("\nTotal Profit: %.2f\n", totalProfit);
 
     return 0;
 }
